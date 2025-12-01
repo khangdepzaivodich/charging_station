@@ -1,2 +1,7 @@
 uvicorn
 fastapi
+pyrosm 
+networkx
+osmnx
+fastapi[all]
+fastapi-cors
