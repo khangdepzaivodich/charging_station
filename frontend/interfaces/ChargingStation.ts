@@ -8,6 +8,6 @@ export default interface ChargingStation {
   id: string;
   chargingPorts: number;
   maximumPower: number;
-  type: string; // AC or DC
+  type: string;
   pricePerKWh: number;
 }

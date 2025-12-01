@@ -4,4 +4,5 @@ export default interface MapInterface {
   endCoords: LatLngExpression | null;
   startPointName?: string;
   endPointName?: string;
+  path?: LatLngExpression[] | null;
 }

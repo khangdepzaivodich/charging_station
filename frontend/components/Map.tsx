@@ -1,6 +1,13 @@
 "use client";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import { useEffect } from "react";
 import { FaMapMarkerAlt, FaChargingStation } from "react-icons/fa";
@@ -20,7 +27,7 @@ const routeIcon = L.divIcon({
 });
 
 const stationIcon = L.divIcon({
-  html: renderToStaticMarkup(<FaChargingStation size={28} color="#22c55e" />), // Tailwind green-500
+  html: renderToStaticMarkup(<FaChargingStation size={28} color="#22c55e" />),
   className: "custom-station-icon",
   iconSize: [30, 30],
   iconAnchor: [15, 30],
@@ -37,11 +44,23 @@ const FlyToMarker = ({ coords }: { coords: LatLngExpression | null }) => {
   return null;
 };
 
+const FitBoundsToRoute = ({ route }: { route: LatLngExpression[] }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (route && route.length > 0) {
+      const bounds = L.latLngBounds(route);
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [route, map]);
+  return null;
+};
+
 const Map = ({
   startCoords,
   endCoords,
   startPointName,
   endPointName,
+  path,
 }: MapInteraface) => {
   return (
     <MapContainer
@@ -53,6 +72,13 @@ const Map = ({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
+      {path && path.length > 0 && (
+        <>
+          <Polyline positions={path} color="blue" weight={4} opacity={0.7} />
+          <FitBoundsToRoute route={path} />
+        </>
+      )}
 
       {startCoords && (
         <>
