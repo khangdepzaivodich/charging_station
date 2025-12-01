@@ -1,75 +1,250 @@
 "use client";
 
+import { useState } from "react";
 import { useSearch } from "@/context/SearchContext";
 import SuggestionsList from "./SuggestionList";
 import SearchInput from "./SearchInput";
+import { BatteryCharging, Settings, Navigation, Zap } from "lucide-react";
+import axios from "axios";
+
 export default function Sidebar() {
   const {
     startPoint,
     endPoint,
+    startCoords,
+    endCoords,
     suggestions,
     activeInput,
-    query,
-    isSearching,
     setStartPoint,
     setEndPoint,
     setActiveInput,
     setQuery,
-    fetchSuggestions,
   } = useSearch();
+
+  const [batteryLevel, setBatteryLevel] = useState(80);
+  const [maxRange, setMaxRange] = useState(300);
+  const [safetyThreshold, setSafetyThreshold] = useState(10);
+  const [preference, setPreference] = useState("time");
+  const [filters, setFilters] = useState({
+    avoidToll: false,
+    avoidHighway: false,
+  });
+
+  const handleSearchRoute = async () => {
+    try {
+      const userInput = {
+        start: startCoords,
+        end: endCoords,
+        vehicle: { batteryLevel, maxRange, safetyThreshold },
+        options: { preference, ...filters },
+      };
+
+      const response = await axios.post(
+        "http://localhost:8000/route",
+        userInput,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      console.log("Route:", response.data);
+    } catch (err) {
+      if (err.response) {
+        console.error("Server responded with error:", err.response.status);
+        console.error("Details:", err.response.data);
+      } else {
+        console.error("Request error:", err.message);
+      }
+    }
+  };
+
   return (
-    <div className="w-full md:w-1/3 bg-gray-50 p-6 overflow-y-auto shadow-md relative">
-      <h2 className="text-2xl font-semibold mb-4 text-blue-600">
-        Tìm trạm sạc xe điện
-      </h2>
-
-      <div className="relative mb-4">
-        <SearchInput
-          label="Điểm đi"
-          value={startPoint}
-          onFocus={() => {
-            setActiveInput("start");
-            setQuery(startPoint);
-          }}
-          onChange={(e) => {
-            setStartPoint(e.target.value);
-            setActiveInput("start");
-            setQuery(e.target.value);
-          }}
-          placeholder="Ví dụ: Trường Đại học Sư phạm"
-        />
-
-        {activeInput === "start" && suggestions.length > 0 && (
-          <SuggestionsList />
-        )}
+    <div className="w-full md:w-1/3 h-screen bg-white border-r border-gray-200 flex flex-col shadow-xl z-20">
+      {/* Header */}
+      <div className="p-5 border-b border-gray-100 bg-blue-600 text-white">
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <Zap className="w-6 h-6 text-yellow-300" />
+          EV Route Planner
+        </h2>
+        <p className="text-blue-100 text-sm mt-1">
+          Tìm trạm sạc & Lộ trình tối ưu
+        </p>
       </div>
 
-      <div className="relative mb-4">
-        <SearchInput
-          label="Điểm đến"
-          value={endPoint}
-          onFocus={() => {
-            setActiveInput("end");
-            setQuery(startPoint);
-          }}
-          onChange={(e) => {
-            setEndPoint(e.target.value);
-            setActiveInput("end");
-            setQuery(e.target.value);
-          }}
-          placeholder="Ví dụ: Trường Đại học Sư phạm"
-        />
+      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <section>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Lộ trình
+          </h3>
+          <div className="relative space-y-4">
+            <div className="relative">
+              <div className="pl-2 border-l-4 border-blue-500">
+                <SearchInput
+                  label="Điểm xuất phát"
+                  value={startPoint}
+                  onFocus={() => {
+                    setActiveInput("start");
+                    setQuery(startPoint);
+                  }}
+                  onChange={(e) => {
+                    setStartPoint(e.target.value);
+                    setActiveInput("start");
+                    setQuery(e.target.value);
+                  }}
+                  placeholder="Nhập vị trí bắt đầu..."
+                />
+              </div>
+              {activeInput === "start" && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 w-full z-50 mt-1">
+                  <SuggestionsList />
+                </div>
+              )}
+            </div>
 
-        {activeInput === "end" && suggestions.length > 0 && <SuggestionsList />}
+            <div className="relative">
+              <div className="pl-2 border-l-4 border-red-500">
+                <SearchInput
+                  label="Điểm đến"
+                  value={endPoint}
+                  onFocus={() => {
+                    setActiveInput("end");
+                    setQuery(endPoint);
+                  }}
+                  onChange={(e) => {
+                    setEndPoint(e.target.value);
+                    setActiveInput("end");
+                    setQuery(e.target.value);
+                  }}
+                  placeholder="Nhập điểm đến..."
+                />
+              </div>
+              {activeInput === "end" && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 w-full z-50 mt-1">
+                  <SuggestionsList />
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <hr className="border-gray-100" />
+        <section>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <BatteryCharging className="w-4 h-4" />
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Pin hiện tại (%)
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={batteryLevel}
+                  onChange={(e) => setBatteryLevel(e.target.value)}
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm 
+                  `}
+                  min="0"
+                  max="100"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Max Range (km)
+              </label>
+              <input
+                type="number"
+                value={maxRange}
+                onChange={(e) => setMaxRange(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                placeholder="300"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Ngưỡng an toàn (%)
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="5"
+                  max="30"
+                  value={safetyThreshold}
+                  onChange={(e) => setSafetyThreshold(e.target.value)}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-sm font-bold text-gray-600 w-8">
+                  {safetyThreshold}%
+                </span>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1">
+                Hệ thống sẽ tìm trạm sạc khi pin dưới mức này.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <hr className="border-gray-100" />
+
+        {/* SECTION 3: TÙY CHỌN & BỘ LỌC */}
+        <section>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Settings className="w-4 h-4" /> Tùy chọn
+          </h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Ưu tiên lộ trình
+              </label>
+              <select
+                value={preference}
+                onChange={(e) => setPreference(e.target.value)}
+                className="w-full p-2 border rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="time">⏱️ Tổng thời gian ngắn nhất</option>
+                <option value="distance">📏 Quãng đường ngắn nhất</option>
+                <option value="charging">🔌 Ít lần sạc nhất</option>
+              </select>
+            </div>
+
+            <div className="flex gap-4 mt-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.avoidHighway}
+                  onChange={(e) =>
+                    setFilters({ ...filters, avoidHighway: e.target.checked })
+                  }
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">Tránh cao tốc</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.avoidToll}
+                  onChange={(e) =>
+                    setFilters({ ...filters, avoidToll: e.target.checked })
+                  }
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">Tránh thu phí</span>
+              </label>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <button
-        onClick={() => fetchSuggestions(query)}
-        disabled={isSearching}
-        className="bg-blue-600 text-white rounded-lg px-4 py-2 mt-2 hover:bg-blue-700 disabled:opacity-50"
-      >
-        {isSearching ? "Đang tìm..." : "🔍 Tìm kiếm"}
-      </button>
+      {/* Footer Button */}
+      <div className="p-5 border-t border-gray-200 bg-gray-50">
+        <button
+          onClick={handleSearchRoute}
+          className="w-full bg-blue-600 text-white font-semibold rounded-xl px-4 py-3 shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex justify-center items-center gap-2"
+        >
+          <Navigation className="w-5 h-5" /> Tìm lộ trình tối ưu
+        </button>
+      </div>
     </div>
   );
 }

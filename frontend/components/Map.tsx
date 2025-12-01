@@ -3,24 +3,37 @@ import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import { useEffect } from "react";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaChargingStation } from "react-icons/fa";
 import { renderToStaticMarkup } from "react-dom/server";
 import MapInteraface from "../interfaces/Map";
-const defaultPosition: LatLngExpression = [21.0285, 105.8542];
+import { stationsData } from "../data/station";
+import StationPopupInfo from "./StationPopupInfo";
 
-const markerIcon = L.divIcon({
-  html: renderToStaticMarkup(<FaMapMarkerAlt size={32} color="red" />),
-  className: "",
+const defaultPosition: LatLngExpression = [10.762622, 106.660172];
+
+const routeIcon = L.divIcon({
+  html: renderToStaticMarkup(<FaMapMarkerAlt size={32} color="#ef4444" />),
+  className: "custom-marker-icon",
   iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
+
+const stationIcon = L.divIcon({
+  html: renderToStaticMarkup(<FaChargingStation size={28} color="#22c55e" />), // Tailwind green-500
+  className: "custom-station-icon",
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+  popupAnchor: [0, -30],
 });
 
 const FlyToMarker = ({ coords }: { coords: LatLngExpression | null }) => {
   const map = useMap();
   useEffect(() => {
     if (coords) {
-      map.flyTo(coords, 13, { duration: 1.5 });
+      map.flyTo(coords, 14, { duration: 1.5 });
     }
-  }, [coords]);
+  }, [coords, map]);
   return null;
 };
 
@@ -43,8 +56,11 @@ const Map = ({
 
       {startCoords && (
         <>
-          <Marker position={startCoords} icon={markerIcon}>
-            <Popup>Điểm đi: {startPointName}</Popup>
+          <Marker position={startCoords} icon={routeIcon}>
+            <Popup>
+              <div className="font-bold text-red-600">Điểm đi:</div>{" "}
+              {startPointName}
+            </Popup>
           </Marker>
           <FlyToMarker coords={startCoords} />
         </>
@@ -52,13 +68,29 @@ const Map = ({
 
       {endCoords && (
         <>
-          <Marker position={endCoords} icon={markerIcon}>
-            <Popup>Điểm đến: {endPointName}</Popup>
+          <Marker position={endCoords} icon={routeIcon}>
+            <Popup>
+              <div className="font-bold text-red-600">Điểm đến:</div>{" "}
+              {endPointName}
+            </Popup>
           </Marker>
           <FlyToMarker coords={endCoords} />
         </>
       )}
+
+      {stationsData.map((station) => (
+        <Marker
+          key={station.id}
+          position={[station.coords.lat, station.coords.lng]}
+          icon={stationIcon}
+        >
+          <Popup maxWidth={300} minWidth={200}>
+            <StationPopupInfo station={station} />
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 };
+
 export default Map;
