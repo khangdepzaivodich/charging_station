@@ -9,6 +9,7 @@ import axios from "axios";
 import { stationsData } from "@/data/station";
 import Vehicle from "@/interfaces/Vehicle";
 import { LatLngExpression } from "leaflet";
+
 export default function Sidebar({
   onRouteFound,
 }: {
@@ -57,6 +58,7 @@ export default function Sidebar({
         },
         chargingStations: stationsData,
       };
+
       console.log("User Input:", userInput);
 
       const response = await axios.post(
@@ -64,8 +66,10 @@ export default function Sidebar({
         userInput,
         { headers: { "Content-Type": "application/json" } }
       );
+
       console.log("Route:", response.data);
-      onRouteFound(response.data.path);
+
+      onRouteFound(response.data.path_geometry);
     } catch (err: any) {
       if (err.response) {
         console.error("Server responded with error:", err.response.status);
@@ -91,6 +95,7 @@ export default function Sidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        {/* Lộ trình */}
         <section>
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
             Lộ trình
@@ -173,6 +178,7 @@ export default function Sidebar({
                 max={100}
               />
             </div>
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Max Range (km)
@@ -186,6 +192,7 @@ export default function Sidebar({
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
               />
             </div>
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Mức tiêu thụ (kWh/100km)
@@ -202,6 +209,7 @@ export default function Sidebar({
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
               />
             </div>
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Tốc độ trung bình (km/h)
@@ -216,6 +224,7 @@ export default function Sidebar({
                 min={0}
               />
             </div>
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Dung lượng pin (kWh)
@@ -233,6 +242,7 @@ export default function Sidebar({
                 min={0}
               />
             </div>
+
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Ngưỡng an toàn (%)
@@ -269,19 +279,21 @@ export default function Sidebar({
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
             <Settings className="w-4 h-4" /> Tùy chọn
           </h3>
+
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Ưu tiên lộ trình
               </label>
+
               <select
                 value={preference}
                 onChange={(e) => setPreference(e.target.value)}
                 className="w-full p-2 border rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                <option value="time">⏱️ Tổng thời gian ngắn nhất</option>
-                <option value="distance">📏 Quãng đường ngắn nhất</option>
-                <option value="charging">🔌 Ít lần sạc nhất</option>
+                <option value="time">Tổng thời gian ngắn nhất</option>
+                <option value="distance">Quãng đường ngắn nhất</option>
+                <option value="cost">Chi phí rẻ nhất</option>
               </select>
             </div>
 
@@ -297,6 +309,7 @@ export default function Sidebar({
                 />
                 <span className="text-sm text-gray-600">Tránh cao tốc</span>
               </label>
+
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"

@@ -1,51 +1,64 @@
-# utils/heuristic_function.py
-from typing import List, Optional
-from model.VehicleOptions import VehicleOptions
-from model.ChargingStation import ChargingStation
 import osmnx as ox
-from utils.ramaining_range import remaining_range
-from utils.charging_time import optimal_charging_time
+from model.VehicleOptions import VehicleOptions
 
-def heuristic(
+# CẤU HÌNH ƯỚC LƯỢNG
+# Dùng công suất sạc MAX để thời gian sạc ước lượng luôn <= thực tế (Admissible)
+MAX_CHARGING_POWER_KW = 250.0 
+# Dùng giá điện MIN để chi phí ước lượng luôn <= thực tế (Admissible)
+MIN_PRICE_PER_KWH = 3000.0 
+
+def calculate_heuristic(
     G,
-    a_node: int,
-    b_node: int,
+    current_node: int,
+    goal_node: int,
     vehicle: VehicleOptions,
-    stations: List[ChargingStation] = [],
-    preference: Optional[str] = "time"
-):
-    ay, ax = G.nodes[a_node]["y"], G.nodes[a_node]["x"]
-    by, bx = G.nodes[b_node]["y"], G.nodes[b_node]["x"]
-    distance_m = ox.distance.euclidean(ay, ax, by, bx)
-    distance_km = distance_m / 1000
-    rem_range_km = remaining_range(vehicle)
+    preference: str,
+    current_battery_pct: float 
+) -> float:
+    # 1. FIX LỖI KHOẢNG CÁCH
+    # Lấy tọa độ
+    curr_y = G.nodes[current_node]["y"]
+    curr_x = G.nodes[current_node]["x"]
+    goal_y = G.nodes[goal_node]["y"]
+    goal_x = G.nodes[goal_node]["x"]
+    
+    # Dùng great_circle để tính ra mét (m) thay vì độ
+    dist_m = ox.distance.great_circle(curr_y, curr_x, goal_y, goal_x)
+    dist_km = dist_m / 1000.0
+
+    # 2. Heuristic calculation
+    h_val = 0.0
 
     if preference == "distance":
-        return distance_km
+        # Heuristic là khoảng cách chim bay (luôn <= khoảng cách đường nhựa)
+        h_val = dist_km
 
-    elif preference == "charging":
-        if rem_range_km >= distance_km and vehicle.batteryLevel > vehicle.safetyThreshold:
-            return 0
-        elif stations:
-            station_distances = [
-                (ox.distance.euclidean((ay, ax), (s.coords.lat, s.coords.lng)), s) for s in stations
-            ]
-            nearest_station = min(station_distances, key=lambda x: x[0])[1]
-            return 1
-        else:
-            return 1
+    elif preference == "time":
+        # a. Thời gian lái xe (Giả sử đi đường chim bay với vận tốc xe)
+        # Lưu ý: Nếu muốn A* hoàn hảo, nên dùng vehicle.max_speed thay vì average speed
+        # để đảm bảo không bao giờ overestimate. Nhưng dùng speed thường cũng chấp nhận được.
+        drive_time = dist_km / vehicle.speed
+        
+        # b. Thời gian sạc ước lượng
+        energy_needed_kwh = dist_km * (vehicle.consumptionRate / 100.0)
+        current_energy_kwh = (current_battery_pct / 100.0) * vehicle.batteryCapacity
+        energy_deficit_kwh = max(0.0, energy_needed_kwh - current_energy_kwh)
+        
+        charge_time = 0.0
+        if energy_deficit_kwh > 0:
+            charge_time = energy_deficit_kwh / MAX_CHARGING_POWER_KW
+            
+        h_val = drive_time + charge_time
 
-    else: 
-        travel_time = distance_km / vehicle.speed
-        if rem_range_km < distance_km or vehicle.batteryLevel <= vehicle.safetyThreshold:
-            if stations:
-                station_distances = [
-                    (ox.distance.euclidean((ay, ax), (s.coords.lat, s.coords.lng)), s) for s in stations
-                ]
-                nearest_station = min(station_distances, key=lambda x: x[0])[1]
-                charging_time = optimal_charging_time(vehicle, nearest_station, distance_km)
-            else:
-                charging_time = 1.0
-        else:
-            charging_time = 0.0
-        return travel_time + charging_time
+    elif preference == "cost":
+        # Tính năng lượng thiếu hụt theo đường chim bay
+        energy_needed_kwh = dist_km * (vehicle.consumptionRate / 100.0)
+        current_energy_kwh = (current_battery_pct / 100.0) * vehicle.batteryCapacity
+        energy_deficit_kwh = max(0.0, energy_needed_kwh - current_energy_kwh)
+        
+        # Dự đoán chi phí rẻ nhất có thể
+        estimated_charging_cost = energy_deficit_kwh * MIN_PRICE_PER_KWH
+        
+        h_val = estimated_charging_cost
+
+    return h_val

@@ -1,0 +1,14 @@
+hcmc_map.graphml
+cache/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Project cache
+backend/cache/
+backend/utils/cache/
+
+# GraphML + PBF
+backend/hcmc_map.graphml
+*.pbf
