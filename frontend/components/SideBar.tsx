@@ -9,7 +9,7 @@ import axios from "axios";
 import { stationsData } from "@/data/station";
 import Vehicle from "@/interfaces/Vehicle";
 import { LatLngExpression } from "leaflet";
-
+import ChargingSummary from "./ChargingSummary";
 export default function Sidebar({
   onRouteFound,
 }: {
@@ -45,6 +45,10 @@ export default function Sidebar({
 
   const [loading, setLoading] = useState(false);
 
+  const [passedStations, setPassedStations] = useState([]);
+  const [summary, setSummary] = useState(undefined);
+  const [message, setMessage] = useState<string | undefined>(undefined);
+  const [feasible, setFeasible] = useState(true);
   const handleSearchRoute = async () => {
     setLoading(true);
     try {
@@ -69,6 +73,10 @@ export default function Sidebar({
 
       console.log("Route:", response.data);
 
+      setPassedStations(response.data.charging_stations || []);
+      setSummary(response.data.summary || null);
+      setMessage(response.data.message || undefined);
+      setFeasible(response.data.feasible);
       onRouteFound(response.data.path_geometry);
     } catch (err: any) {
       if (err.response) {
@@ -324,6 +332,12 @@ export default function Sidebar({
             </div>
           </div>
         </section>
+        <ChargingSummary
+          stations={passedStations}
+          summary={summary}
+          message={message}
+          feasible={feasible}
+        />
       </div>
 
       <div className="p-5 border-t border-gray-200 bg-gray-50">

@@ -12,7 +12,7 @@ def optimal_charging_time(
     energy_current = (current_battery_pct / 100.0) * battery_capacity_kwh
     energy_min = (vehicle.safetyThreshold / 100.0) * battery_capacity_kwh
     
-    TARGET_PCT = 85.0
+    TARGET_PCT = 60.0
     energy_target_std = (TARGET_PCT / 100.0) * battery_capacity_kwh
     
     energy_needed_dist = ((distance_to_goal * vehicle.consumptionRate) / 100.0) * 1.5

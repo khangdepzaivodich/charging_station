@@ -10,24 +10,36 @@ import {
 } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import { useEffect } from "react";
-import { FaMapMarkerAlt, FaChargingStation } from "react-icons/fa";
 import { renderToStaticMarkup } from "react-dom/server";
 import MapInteraface from "../interfaces/Map";
 import { stationsData } from "../data/station";
 import StationPopupInfo from "./StationPopupInfo";
+import { HiLocationMarker, HiFlag } from "react-icons/hi";
+import { MdEvStation } from "react-icons/md";
 
 const defaultPosition: LatLngExpression = [10.762622, 106.660172];
 
-const routeIcon = L.divIcon({
-  html: renderToStaticMarkup(<FaMapMarkerAlt size={32} color="#ef4444" />),
-  className: "custom-marker-icon",
+// Icon riêng cho start
+const startIcon = L.divIcon({
+  html: renderToStaticMarkup(<HiLocationMarker size={36} color="#3b82f6" />),
+  className: "custom-start-icon",
+  iconSize: [36, 36],
+  iconAnchor: [18, 36],
+  popupAnchor: [0, -36],
+});
+
+// Icon riêng cho end
+const endIcon = L.divIcon({
+  html: renderToStaticMarkup(<HiFlag size={32} color="#ef4444" />),
+  className: "custom-end-icon",
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
 });
 
+// Icon trạm sạc
 const stationIcon = L.divIcon({
-  html: renderToStaticMarkup(<FaChargingStation size={28} color="#22c55e" />),
+  html: renderToStaticMarkup(<MdEvStation size={28} color="#22c55e" />),
   className: "custom-station-icon",
   iconSize: [30, 30],
   iconAnchor: [15, 30],
@@ -82,9 +94,9 @@ const Map = ({
 
       {startCoords && (
         <>
-          <Marker position={startCoords} icon={routeIcon}>
+          <Marker position={startCoords} icon={startIcon}>
             <Popup>
-              <div className="font-bold text-red-600">Điểm đi:</div>{" "}
+              <div className="font-bold text-blue-600">Điểm đi:</div>{" "}
               {startPointName}
             </Popup>
           </Marker>
@@ -94,7 +106,7 @@ const Map = ({
 
       {endCoords && (
         <>
-          <Marker position={endCoords} icon={routeIcon}>
+          <Marker position={endCoords} icon={endIcon}>
             <Popup>
               <div className="font-bold text-red-600">Điểm đến:</div>{" "}
               {endPointName}

@@ -7,14 +7,6 @@ def calculate_step_cost(
     preference: str,
     current_battery_pct: float
 ) -> Tuple[float, float, float, float]:
-    """
-    Tính toán chi phí vật lý thuần túy cho một cạnh.
-    Returns:
-        step_cost: Cost theo preference (time/distance/cost)
-        final_battery_pct: Pin còn lại
-        travel_time_hours: Thời gian di chuyển
-        distance_km: Khoảng cách
-    """
     distance_km = edge_length_m / 1000.0
     travel_time_hours = distance_km / vehicle.speed
     
