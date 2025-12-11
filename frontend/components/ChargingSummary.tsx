@@ -56,7 +56,7 @@ const ChargingSummary: FC<ChargingSummaryProps> = ({
 
       {stations.length === 0 ? (
         <p className="text-gray-400 text-sm">
-          {message && feasible ? "Không có trạm sạc nào trong lộ trình" : ""}
+          {feasible ? "Không có trạm sạc nào trong lộ trình" : ""}
         </p>
       ) : (
         <ul className="space-y-3 max-h-60 overflow-y-auto">

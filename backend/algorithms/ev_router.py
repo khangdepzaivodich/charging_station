@@ -68,7 +68,6 @@ def _segment_a_star(
             if new_batt_pct < safety_threshold_pct:
                 continue
 
-            # 2. Tính Step Cost (g)
             step_cost = 0.0
             
             if preference == "distance":
@@ -219,7 +218,6 @@ def find_ev_route_multistop(
     while True:
         print(f"\n[Hop {stop_counter}] Node {current_node} | Batt: {current_battery_pct:.1f}%")
         
-        # 1. Thử đi thẳng
         direct_try = _segment_a_star(adj, G, current_node, goal, vehicle, current_battery_pct, preference)
         
         if direct_try and direct_try["final_battery_pct"] >= safety_threshold_pct:

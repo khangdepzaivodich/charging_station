@@ -24,7 +24,7 @@ def calculate_step_cost(
     if preference == "distance":
         step_cost = distance_km
     elif preference == "cost":
-        # Giả sử chi phí vận hành ~ distance (chưa tính phí sạc)
+       
         step_cost = distance_km 
     else:  # time (default)
         step_cost = travel_time_hours
