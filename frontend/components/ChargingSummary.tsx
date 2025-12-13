@@ -93,10 +93,7 @@ const ChargingSummary: FC<ChargingSummaryProps> = ({
             <FaRoad /> Tổng quãng đường:{" "}
             <b>{summary.total_distance_km.toFixed(2)} km</b>
           </p>
-          <p className="flex items-center gap-2">
-            <FaClock /> Tổng thời gian dự kiến:{" "}
-            <b>{summary.estimated_time_hours.toFixed(2)} giờ</b>
-          </p>
+
           <p className="flex items-center gap-2">
             <FaBatteryHalf /> Số lần sạc: <b>{summary.charge_count}</b>
           </p>

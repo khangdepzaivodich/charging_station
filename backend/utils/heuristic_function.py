@@ -24,7 +24,7 @@ def calculate_heuristic(
     dist_km = dist_m / 1000.0
 
     h_val = 0.0
-
+    estimated_time_hours = 0.0
     if preference == "distance":
         h_val = dist_km
 
@@ -40,6 +40,7 @@ def calculate_heuristic(
             charge_time = energy_deficit_kwh / MAX_CHARGING_POWER_KW
             
         h_val = drive_time + charge_time
+        estimated_time_hours = h_val
 
     elif preference == "cost":
         energy_needed_kwh = dist_km * (vehicle.consumptionRate / 100.0)
@@ -50,4 +51,4 @@ def calculate_heuristic(
         
         h_val = estimated_charging_cost
 
-    return h_val
+    return h_val, estimated_time_hours
