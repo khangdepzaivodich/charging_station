@@ -5,7 +5,7 @@ from model.VehicleOptions import VehicleOptions
 # Dùng công suất sạc MAX để thời gian sạc ước lượng luôn <= thực tế (Admissible)
 MAX_CHARGING_POWER_KW = 60.0 
 # Dùng giá điện MIN để chi phí ước lượng luôn <= thực tế (Admissible)
-MIN_PRICE_PER_KWH = 3000.0 
+MIN_PRICE_PER_KWH = 3858.0 
 
 def calculate_heuristic(
     G,
@@ -51,4 +51,4 @@ def calculate_heuristic(
         
         h_val = estimated_charging_cost
 
-    return h_val, estimated_time_hours
+    return h_val

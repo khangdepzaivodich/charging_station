@@ -113,10 +113,6 @@ const ChargingSummary: FC<ChargingSummaryProps> = ({
             <FaBatteryHalf /> Pin còn lại:{" "}
             <b>{summary.final_battery_pct.toFixed(1)}%</b>
           </p>
-          <p className="flex items-center gap-2">
-            <FaCarSide /> Xe còn chạy được:{" "}
-            <b>{summary.remaining_range_km.toFixed(2)} km</b>
-          </p>
         </div>
       )}
     </div>
